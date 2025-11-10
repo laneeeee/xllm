@@ -629,7 +629,7 @@ RawForwardInput BatchInputBuilder::state_to_raw_forward_input() {
            ++output_idx) {
         torch::Tensor embedding = embeddings[output_idx].to(torch::kFloat32);
         Slice<float> embedding_slice = {embedding.data_ptr<float>(),
-                                        embedding.size(0)};
+                                        static_cast<size_t>(embedding.size(0))};
         raw_forward_input.embeddings.push_back(embedding_slice);
       }
     }

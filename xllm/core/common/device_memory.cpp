@@ -36,6 +36,10 @@ limitations under the License.
 #include <torch_npu/csrc/libs/init_npu.h>
 #endif
 
+#if defined(USE_ILU)
+#include <c10/cuda/CUDAFunctions.h>
+#endif
+
 namespace xllm {
 
 #if defined(USE_NPU)
@@ -73,6 +77,18 @@ int64_t DeviceMemory::available_memory(const torch::Device& device) {
 
 #if defined(USE_MLU)
 // TODO(mlu): implement mlu device memory
+#endif
+
+#if defined(USE_ILU)
+// TODO(ilu): implement ilu device memory
+int64_t DeviceMemory::total_memory(const torch::Device& device) { return 0; }
+
+int64_t DeviceMemory::available_memory(const torch::Device& device) {
+  size_t free_bytes, total_bytes;
+  cudaSetDevice(device.has_index() ? device.index() : 0);
+  cudaMemGetInfo(&free_bytes, &total_bytes);
+  return static_cast<int64_t>(free_bytes);
+}
 #endif
 
 }  // namespace xllm

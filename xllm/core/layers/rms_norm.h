@@ -30,6 +30,13 @@ class RmsNorm : public torch::nn::ModuleHolder<NpuRmsNormImpl> {
   RmsNorm(const ModelContext& context)
       : ModuleHolder(std::make_shared<NpuRmsNormImpl>(context)) {}
 };
+#elif defined(USE_ILU)
+class RmsNorm : public torch::nn::Module {
+ public:
+  const ModelContext* place_holder;
+  RmsNorm(const ModelContext& context) : place_holder(&context) {}
+  RmsNorm(std::nullptr_t) : place_holder(nullptr) {}
+};
 #endif
 
 }  // namespace layer

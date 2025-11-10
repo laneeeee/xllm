@@ -46,6 +46,9 @@ cc_test(
     Boost::serialization
     GTest::gtest_main
 )
-
+if(USE_NPU)
 target_link_libraries(block_test PRIVATE brpc OpenSSL::SSL OpenSSL::Crypto ascendcl Folly::folly)
+elseif(USE_ILU)
+target_link_libraries(block_test PRIVATE brpc OpenSSL::SSL OpenSSL::Crypto Folly::folly)
+endif()
 add_dependencies(block_test brpc-static)

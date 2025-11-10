@@ -202,6 +202,12 @@ def set_mlu_envs():
     os.environ["PYTHON_LIB_PATH"] =  get_torch_root_path()
     os.environ["LIBTORCH_ROOT"] = get_torch_root_path()
 
+def set_ilu_envs():
+    os.environ["PYTHON_INCLUDE_PATH"] = get_python_include_path()
+    os.environ["PYTHON_LIB_PATH"] =  get_torch_root_path()
+    os.environ["LIBTORCH_ROOT"] = get_torch_root_path()
+    os.environ["PYTORCH_INSTALL_PATH"] = get_torch_root_path()
+
 class CMakeExtension(Extension):
     def __init__(self, name: str, path: str, sourcedir: str = "") -> None:
         super().__init__(name, sources=[])
@@ -250,6 +256,7 @@ class ExtBuild(build_ext):
             for ext in self.extensions:
                 self.build_extension(ext)
         except Exception as e:
+            print(e)
             print("Build failed.")
             exit(1)
 
@@ -270,6 +277,11 @@ class ExtBuild(build_ext):
         cmake_args = [
             "-G",
             "Ninja",
+            "-DCMAKE_TOOLCHAIN_FILE=/workspace/vcpkg/scripts/buildsystems/vcpkg.cmake",
+            "-DCMAKE_C_COMPILER=/usr/local/corex/bin/clang",
+            "-Wno-narrowing",
+            "-DCMAKE_CXX_COMPILER=/usr/local/corex/bin/clang++",
+            "-DCMAKE_CUDA_COMPILER=/usr/local/corex/bin/clang++",
             f"-DCMAKE_MAKE_PROGRAM={ninja_dir}",
             f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={extdir}",
             f"-DCMAKE_RUNTIME_OUTPUT_DIRECTORY={extdir}",
@@ -291,6 +303,11 @@ class ExtBuild(build_ext):
             cmake_args += ["-DUSE_MLU=ON"]
             # set mlu environment variables
             set_mlu_envs()
+        elif self.device == "ilu":
+            cmake_args += ["-DUSE_ILU=ON"]
+            print("USE_ILU=ON")
+            # set npu environment variables
+            set_ilu_envs()
         else:
             raise ValueError("Please set --device to a2 or a3 or mlu.")
 
@@ -511,9 +528,10 @@ def apply_patch():
             exit(0)
 
 if __name__ == "__main__":
-    device = 'a2'  # default
+    device = 'ilu'  # default
     arch = get_cpu_arch()
     install_kernels = True
+    print("sys.argv", sys.argv)
     if '--device' in sys.argv:
         idx = sys.argv.index('--device')
         if idx + 1 < len(sys.argv):
@@ -571,7 +589,7 @@ if __name__ == "__main__":
             "Programming Language :: Python :: 3.10",
             "Programming Language :: Python :: 3.11",
             "Programming Language :: Python :: 3.12",
-            "Environment :: NPU",
+            "Environment :: ILU",
             "Operating System :: POSIX",
             "License :: OSI Approved :: Apache Software License",
             "Topic :: Scientific/Engineering",

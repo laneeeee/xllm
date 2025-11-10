@@ -65,6 +65,11 @@ void WorkerServer::create_server(const runtime::Options& options,
   }
 #elif defined(USE_MLU)
 // TODO(mlu): implement mlu device set
+#elif defined(USE_ILU)
+  int ret = c10::cuda::SetDevice(device_id);
+  if (ret != 0) {
+    LOG(ERROR) << "set device id: " << device_id << " failed, ret:" << ret;
+  }
 #endif
 
   auto worker_global_rank = global_rank;
@@ -154,6 +159,9 @@ void WorkerServer::create_server(const runtime::Options& options,
                                                  dispatchAndCombinecommDomain,
                                                  dispatchAndCombineHcclComm);
 #elif defined(USE_MLU)
+  parallel_args = std::make_unique<ParallelArgs>(
+      worker_global_rank, world_size, dp_size, nullptr, ep_size);
+#elif defined(USE_ILU)
   parallel_args = std::make_unique<ParallelArgs>(
       worker_global_rank, world_size, dp_size, nullptr, ep_size);
 #endif

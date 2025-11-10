@@ -10,6 +10,9 @@
 #if defined(USE_NPU)
 #include <torch_npu/csrc/framework/OpCommand.h>
 #include <torch_npu/torch_npu.h>
+#elif defined(USE_ILU)
+#include "c10/core/StreamGuard.h"
+#include "c10/cuda/CUDAStream.h"
 #endif
 
 namespace xllm {
@@ -34,6 +37,8 @@ class StreamHelper {
   c10_npu::NPUStream stream_;
 #elif defined(USE_MLU)
 // TODO(mlu): implement mlu stream
+#elif defined(USE_ILU)
+  c10::cuda::CUDAStream stream_;
 #endif
 };
 

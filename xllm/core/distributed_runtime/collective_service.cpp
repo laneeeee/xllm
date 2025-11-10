@@ -55,7 +55,18 @@ void CollectiveService::Sync(::google::protobuf::RpcController* controller,
   }
 
   to_proto_list(root_infos_, response);
+#elif defined(USE_ILU)
+  brpc::ClosureGuard done_guard(done);
+
+  std::string address = request->address();
+  int32_t global_rank = request->global_rank();
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    addrs_map_[global_rank] = address;
+  }
+
 #endif
+
   return;
 }
 

@@ -82,6 +82,19 @@ struct ParallelArgs {
         mapping_(mapping),
         dispatchAndCombinecommDomain_(dispatchAndCombinecommDomain),
         dispatchAndCombineHcclComm_(dispatchAndCombineHcclComm) {}
+#elif defined(USE_ILU)
+  ParallelArgs(int32_t rank,
+               int32_t world_size,
+               int32_t dp_size,
+               ProcessGroup* process_group,
+               int32_t ep_size,
+               nlohmann::json mapping_data)
+      : rank_(rank),
+        world_size_(world_size),
+        dp_size_(dp_size),
+        process_group_(process_group),
+        ep_size_(ep_size),
+        mapping_data_(mapping_data) {}
 #endif
 
   ParallelArgs(int32_t rank,
@@ -131,6 +144,8 @@ struct ParallelArgs {
 
   // atb hccl dispatchAndCombineHcclComm
   PROPERTY(HcclComm, dispatchAndCombineHcclComm);
+#elif defined(USE_ILU)
+  PROPERTY(nlohmann::json, mapping_data);
 #endif
 };
 

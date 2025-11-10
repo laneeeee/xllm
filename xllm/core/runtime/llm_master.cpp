@@ -51,9 +51,10 @@ LLMMaster::LLMMaster(const Options& options)
              options.draft_model_path().value_or("").empty()
                  ? EngineType::LLM
                  : EngineType::SSM) {
-  CHECK(engine_->init());
+  // hardcode
+  // CHECK(engine_->init());
 
-  model_args_ = engine_->model_args();
+  // model_args_ = engine_->model_args();
 
   bool enable_decode_response_to_service = false;
   if (options_.enable_service_routing()) {
@@ -100,12 +101,12 @@ LLMMaster::LLMMaster(const Options& options)
     auto& instance_info = scheduler_->get_instance_info();
     XServiceClient::get_instance()->register_instance(instance_info);
   }
+  // hardcode
+  //  construct chat template
+  //  chat_template_ =
+  //      std::make_unique<JinjaChatTemplate>(engine_->tokenizer_args());
 
-  // construct chat template
-  chat_template_ =
-      std::make_unique<JinjaChatTemplate>(engine_->tokenizer_args());
-
-  tokenizer_ = engine_->tokenizer()->clone();
+  // tokenizer_ = engine_->tokenizer()->clone();
   threadpool_ = std::make_unique<ThreadPool>(options_.num_handling_threads());
 }
 

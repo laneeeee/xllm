@@ -28,6 +28,7 @@ limitations under the License.
 #include "framework/parallel_state.h"
 #include "runtime/executor.h"
 #include "runtime/forward_params.h"
+#include "runtime/llm_worker_impl.h"
 #include "runtime/options.h"
 #include "runtime/worker_impl.h"
 #include "worker.pb.h"

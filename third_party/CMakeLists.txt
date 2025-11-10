@@ -7,6 +7,26 @@ add_subdirectory(smhasher/src)
 add_subdirectory(cpprestsdk)
 set(CPPREST_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cpprestsdk/Release/include)
 set(CPPREST_LIB ${CMAKE_BINARY_DIR}/third_party/cpprestsdk/Release/Binaries/libcpprest.a)
+
+if(TARGET cpprest)
+    set_target_properties(cpprest PROPERTIES
+        CXX_STANDARD 20
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS OFF
+    )
+endif()
+
+if(TARGET SMHasherSupport)
+    set_target_properties(SMHasherSupport PROPERTIES
+        CXX_STANDARD 11
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS OFF
+    )
+    message(STATUS "SMHasherSupport target found and configured")
+else()
+    message(WARNING "SMHasherSupport target not found after adding smhasher")
+endif()
+
 add_subdirectory(etcd_cpp_apiv3)
 
 if(USE_NPU)
@@ -14,6 +34,19 @@ if(USE_NPU)
   add_subdirectory(hccl_transfer/hccl_transfer)
 endif()
 add_subdirectory(Mooncake)
+
+if(TARGET transfer_engine)
+    target_compile_options(transfer_engine PRIVATE -std=c++20)
+    set_target_properties(transfer_engine PROPERTIES
+        CXX_STANDARD 20
+        CXX_STANDARD_REQUIRED ON
+    )
+    message(STATUS "Set C++20 for transfer_engine target")
+endif()
+
+if(TARGET mooncake_store)
+    target_compile_options(mooncake_store PRIVATE -Wall -Wno-narrowing -Wno-thread-safety-analysis )
+endif()
 
 target_include_directories(mooncake_store PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/Mooncake/mooncake-transfer-engine/include

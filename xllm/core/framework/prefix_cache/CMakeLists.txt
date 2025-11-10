@@ -25,7 +25,7 @@ cc_library(
     torch
 )
 
-
+if(USE_NPU)
 cc_test(
   NAME
     prefix_test
@@ -40,9 +40,9 @@ cc_test(
     Boost::serialization
     GTest::gtest_main
 )
-
 target_link_libraries(prefix_test PRIVATE brpc OpenSSL::SSL OpenSSL::Crypto ascendcl Folly::folly)
 add_dependencies(prefix_test brpc-static)
+endif()
 
 cc_binary(
   NAME

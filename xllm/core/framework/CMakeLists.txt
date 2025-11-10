@@ -33,11 +33,11 @@ cc_library(
   DEPS
     :common
     torch
-    hccl
+    $<$<BOOL:${USE_NPU}>:hccl>
     glog::glog
 )
 
-
+if(USE_NPU)
 cc_test(
   NAME 
     mapping_npu_test
@@ -49,7 +49,7 @@ cc_test(
     absl::time
     GTest::gtest_main
 )
-
+endif()
 cc_library(
   NAME 
     model_loader

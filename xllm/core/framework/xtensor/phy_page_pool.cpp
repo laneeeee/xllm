@@ -93,9 +93,11 @@ void PhyPagePool::map(VirPtr vir_ptr, PhyMemHandle phy_handle) const {
 void PhyPagePool::map(VirPtr vir_ptr,
                       uint32_t page_id,
                       int64_t layer_idx) const {
+#if defined(USE_NPU)
   PhyMemHandle phy_handle =
       free_phy_pages_[layer_idx][page_id]->get_phy_handle();
   map(vir_ptr, phy_handle);
+#endif
 }
 
 void PhyPagePool::batch_map(VirPtr vir_ptr,

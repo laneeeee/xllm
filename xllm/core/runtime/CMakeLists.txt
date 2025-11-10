@@ -125,7 +125,7 @@ target_link_libraries(acl_graph_executor_test
                       PRIVATE
                       torch_npu
                       ascendcl
-                      hccl
+                      $<$<BOOL:${USE_NPU}>:hccl>
                       c_sec
                       nnopbase
                       )
@@ -136,3 +136,5 @@ target_link_options(acl_graph_executor_test PRIVATE
   "${CMAKE_BINARY_DIR}/third_party/spdlog/libspdlog.a"
   "-Wl,--no-whole-archive")
 endif()
+
+target_link_libraries(runtime PRIVATE atomic)

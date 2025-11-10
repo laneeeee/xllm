@@ -201,6 +201,12 @@ std::vector<std::unique_ptr<ProcessGroup>> ProcessGroup::create_process_groups(
     const std::vector<torch::Device>& devices) {
   return {};
 }
+#elif defined(USE_ILU)
+// TODO(ilu): implement create_process_groups for ilu
+std::vector<std::unique_ptr<ProcessGroup>> ProcessGroup::create_process_groups(
+    const std::vector<torch::Device>& devices) {
+  return {};
+}
 #endif
 
 #if defined(USE_NPU)

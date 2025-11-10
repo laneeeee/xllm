@@ -34,8 +34,9 @@ namespace xllm {
 ProfileManager::ProfileManager(Engine* engine, const Options& options)
     : options_(options), engine_(engine) {
   CHECK(engine_ != nullptr);
-  block_manager_pool_ = engine_->block_manager_pool();
-  CHECK(block_manager_pool_ != nullptr);
+  // hardcode
+  //  block_manager_pool_ = engine_->block_manager_pool();
+  //  CHECK(block_manager_pool_ != nullptr);
   prefill_time_predictor_ = std::make_unique<TimePredictor>(
       options.enable_profile_kv_blocks(), true /*is_prefill*/);
   decode_time_predictor_ = std::make_unique<TimePredictor>(

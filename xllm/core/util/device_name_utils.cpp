@@ -30,6 +30,10 @@ limitations under the License.
 #include <torch_npu/torch_npu.h>
 #elif defined(USE_MLU)
 // TODO(mlu): include mlu device name utils
+#elif defined(USE_ILU)
+#include <c10/core/Device.h>
+#include <c10/cuda/CUDAFunctions.h>
+#include <torch/csrc/Device.h>
 #endif
 
 namespace xllm {
@@ -76,6 +80,47 @@ std::vector<torch::Device> DeviceNameUtils::parse_devices(
 }
 #elif defined(USE_MLU)
 // TODO(mlu): implement mlu device name utils
+#elif defined(USE_ILU)
+std::vector<torch::Device> DeviceNameUtils::parse_devices(
+    const std::string& device_str) {
+  std::vector<torch::Device> devices;
+
+  if (device_str == "auto" || device_str.empty()) {
+    const auto num_gpus = c10::cuda::device_count();
+    if (num_gpus == 0) {
+      LOG(INFO) << "no gpus found, using cpu.";
+      return {torch::kCPU};
+    }
+    devices.reserve(num_gpus);
+    for (int i = 0; i < num_gpus; ++i) {
+      std::string device_name = "cuda:" + std::to_string(i);
+      devices.emplace_back(torch::Device(device_name));
+    }
+    return devices;
+  }
+
+  // parse device string
+  const std::vector<std::string> device_strs = absl::StrSplit(device_str, ',');
+  std::set<torch::DeviceType> device_types;
+  devices.reserve(device_strs.size());
+  for (const auto& device_str : device_strs) {
+    std::vector<std::string> parts = absl::StrSplit(device_str, ':');
+    CHECK(parts.size() == 2) << "Invalid device string format: " << device_str;
+    CHECK(parts[0] == "cuda") << "Unsupported device type: " << parts[0];
+
+    int device_index;
+    CHECK(absl::SimpleAtoi(parts[1], &device_index))
+        << "Invalid device index: " << parts[1];
+
+    devices.emplace_back(c10::DeviceType::PrivateUse1, device_index);
+    device_types.insert(devices.back().type());
+  }
+  CHECK(!devices.empty()) << "No devices specified.";
+  CHECK(device_types.size() == 1)
+      << "All devices must be of the same type. Got: " << device_str;
+
+  return devices;
+}
 #endif
 
 }  // namespace xllm

@@ -47,12 +47,13 @@ ContinuousScheduler::ContinuousScheduler(Engine* engine, const Options& options)
           create_comparator(options.priority_strategy())) {
   CHECK(engine_ != nullptr);
 
-  if (!FLAGS_enable_continuous_kvcache) {
-    kv_cache_manager_ = engine_->block_manager_pool();
-  } else {
-    kv_cache_manager_ = engine_->xtensor_manager_pool();
-  }
-  CHECK(kv_cache_manager_ != nullptr);
+  // hardcode
+  //  if (!FLAGS_enable_continuous_kvcache) {
+  //    kv_cache_manager_ = engine_->block_manager_pool();
+  //  } else {
+  //    kv_cache_manager_ = engine_->xtensor_manager_pool();
+  //  }
+  //  CHECK(kv_cache_manager_ != nullptr);
 
   enable_prefix_cache_ = FLAGS_enable_prefix_cache;
 
@@ -70,12 +71,12 @@ ContinuousScheduler::ContinuousScheduler(Engine* engine, const Options& options)
       .enable_profile_token_budget(options.enable_profile_token_budget());
   profile_manager_ =
       std::make_unique<ProfileManager>(engine, profile_manager_options);
-
-  response_processor_ = std::make_unique<AsyncResponseProcessor>(
-      engine_->tokenizer(),
-      options_.instance_role(),
-      options_.enable_schedule_overlap(),
-      options_.enable_decode_response_to_service());
+  // hardcode
+  // response_processor_ = std::make_unique<AsyncResponseProcessor>(
+  //     engine_->tokenizer(),
+  //     options_.instance_role(),
+  //     options_.enable_schedule_overlap(),
+  //     options_.enable_decode_response_to_service());
   create_running_queue(options);
   if (options_.enable_service_routing()) {
     XServiceClient::get_instance()->set_scheduler(this);

@@ -661,7 +661,7 @@ void forward_output_to_proto(const torch::Tensor& next_tokens,
     if (expert_load_data_flattened.defined()) {
       Slice<int64_t> expert_load_data_flattened_slice = {
           expert_load_data_flattened.data_ptr<int64_t>(),
-          expert_load_data_flattened.size(0)};
+          static_cast<size_t>(expert_load_data_flattened.size(0))};
       ADD_VECTOR_TO_PROTO(pb_forward_output->mutable_expert_load_data(),
                           expert_load_data_flattened_slice);
     }
@@ -682,8 +682,13 @@ Token build_token(int64_t index,
       auto topk_tokens = top_tokens[index];
       auto topk_logprobs = top_logprobs[index];
       const size_t size = topk_tokens.numel();
+#if defined(USE_NPU)
       token.top_tokens = {topk_tokens.const_data_ptr<int64_t>(), size};
       token.top_logprobs = {topk_logprobs.const_data_ptr<float>(), size};
+#elif defined(USE_ILU)
+      token.top_tokens = Slice(topk_tokens.data_ptr<int64_t>(), size);
+      token.top_logprobs = Slice(topk_logprobs.data_ptr<float>(), size);
+#endif
     }
   }
   return token;

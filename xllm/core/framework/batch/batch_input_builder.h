@@ -89,6 +89,9 @@ class BatchInputBuilder {
 #elif defined(USE_MLU)
     std::vector<int32_t> seq_lens = {0};    // cu_seq_lens
     std::vector<int32_t> q_seq_lens = {0};  // q_cu_seq_len
+#elif defined(USE_ILU)
+    std::vector<int32_t> seq_lens = {0};    // cu_seq_lens
+    std::vector<int32_t> q_seq_lens = {0};  // q_cu_seq_len
 #endif
 
     // Cache and block data

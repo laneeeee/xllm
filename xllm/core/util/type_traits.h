@@ -42,6 +42,10 @@ using remove_optional_t = typename remove_optional<value_type>::type;
 using VirPtr = void*;
 using PhyMemHandle = aclrtDrvMemHandle;
 using VmmResult = aclError;
+#elif defined(USE_ILU)
+using VirPtr = void*;
+using PhyMemHandle = int;
+using VmmResult = int;
 #endif
 
 constexpr int VmmSuccess = 0;

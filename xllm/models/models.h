@@ -30,4 +30,8 @@ limitations under the License.
 #include "llm/qwen_base.h"        // IWYU pragma: keep
 #include "vlm/minicpmv.h"         // IWYU pragma: keep
 #include "vlm/qwen2_5_vl.h"       // IWYU pragma: keep
+#elif defined(USE_ILU)
+// #include "llm/qwen2.h"            // IWYU pragma: keep
+// #include "llm/qwen2_ilu.h"            // IWYU pragma: keep
+// #include "llm/qwen_base.h"            // IWYU pragma: keep
 #endif

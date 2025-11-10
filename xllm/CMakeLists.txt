@@ -1,7 +1,11 @@
 include(cc_binary)
 
 include_directories(.)
-
+if(USE_ILU)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+endif()
 add_subdirectory(api_service)
 add_subdirectory(core)
 add_subdirectory(function_call)
@@ -17,6 +21,7 @@ cc_binary(
   SRCS
     xllm.cpp
   DEPS
+    torch
     :flags
     :xllm_server
     :master
@@ -31,10 +36,22 @@ cc_binary(
 # link brpc
 target_link_libraries(xllm PRIVATE glog::glog brpc leveldb::leveldb ZLIB::ZLIB protobuf::libprotobuf ${OpenCV_LIBS})
 add_dependencies(xllm brpc-static)
+target_link_libraries(xllm
+    PUBLIC
+    ${LIBNL-3_LIBRARIES}
+    ${LIBNL-ROUTE-3_LIBRARIES}
+)
+target_include_directories(xllm
+    PUBLIC
+    ${LIBNL-3_INCLUDE_DIRS}
+    ${LIBNL-ROUTE-3_INCLUDE_DIRS}
+)
 
 if(USE_NPU)
   set(COMMON_LIBS Python::Python ascendcl hccl c_sec nnopbase ms_tools_ext)
 elseif(USE_MLU)
+  set(COMMON_LIBS Python::Python)
+elseif(USE_ILU)
   set(COMMON_LIBS Python::Python)
 endif()
 

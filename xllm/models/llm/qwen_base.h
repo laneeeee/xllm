@@ -14,8 +14,11 @@ limitations under the License.
 ==============================================================================*/
 
 #pragma once
-
+#if defined(USE_NPU)
 #include <atb/atb_infer.h>
+
+#include "xllm_kernels/core/include/atb_speed/log.h"
+#endif
 #include <gflags/gflags.h>
 #include <torch/torch.h>
 
@@ -33,7 +36,6 @@ limitations under the License.
 #include "core/layers/pos_embedding.h"
 #include "core/layers/rms_norm.h"
 #include "models/model_registry.h"
-#include "xllm_kernels/core/include/atb_speed/log.h"
 
 namespace xllm {
 
@@ -112,7 +114,7 @@ class QWenDecoderLayerImplBase : public torch::nn::Module {
     block_copy_ = register_module("block_copy", layer::BlockCopy(context));
 #endif
   }
-
+#if defined(USE_NPU)
   virtual torch::Tensor forward(std::vector<torch::Tensor>& x,
                                 std::vector<torch::Tensor>& cos_pos,
                                 std::vector<torch::Tensor>& sin_pos,
@@ -122,7 +124,6 @@ class QWenDecoderLayerImplBase : public torch::nn::Module {
                                 int node_id,
                                 std::vector<aclrtEvent*> event,
                                 std::vector<std::atomic<bool>*> event_flag) {
-#if defined(USE_NPU)
     auto micro_batch_num = x.size();
     for (auto i = 0; i < micro_batch_num; ++i) {
       if (input_params[i].src_block_indices.numel() > 0) {
@@ -134,7 +135,6 @@ class QWenDecoderLayerImplBase : public torch::nn::Module {
                     0);
       }
     }
-#endif
     return decoder_layer_(x,
                           cos_pos,
                           sin_pos,
@@ -145,7 +145,18 @@ class QWenDecoderLayerImplBase : public torch::nn::Module {
                           event_flag,
                           node_id);
   }
-
+  elif defined(USE_ILU) virtual torch::Tensor
+      forward(std::vector<torch::Tensor>& x,
+              std::vector<torch::Tensor>& cos_pos,
+              std::vector<torch::Tensor>& sin_pos,
+              std::vector<torch::Tensor>& attn_mask,
+              KVCache& kv_cache,
+              std::vector<ModelInputParams>& input_params,
+              int node_id) {
+    torch::Tensor place_holder = torch::Tensor();
+    return place_holder;
+  }
+#endif
   // load the weight from the checkpoint
   virtual void load_state_dict(const StateDict& state_dict) {
     // call each submodule's load_state_dict function
@@ -177,11 +188,11 @@ class QWenModelImplBase : public torch::nn::Module {
       : model_type_(model_type) {
     mrope_section_ = args.rope_scaling_mrope_section();
   }
-
+#if defined(USE_NPU)
   torch::Tensor get_input_embeddings(torch::Tensor input_ids) {
     return embed_tokens_[0](input_ids, 0);
   }
-
+#endif
   // tokens: [num_tokens]
   // positions: [num_tokens] token pos in the sequence
   virtual torch::Tensor forward(
@@ -189,6 +200,7 @@ class QWenModelImplBase : public torch::nn::Module {
       std::vector<torch::Tensor> positions,
       std::vector<KVCache>& kv_caches,
       const std::vector<ModelInputParams>& input_params) {
+#if defined(USE_NPU)
     auto micro_batch_num = tokens.size();
     std::vector<torch::Tensor> hs;
     hs.reserve(micro_batch_num);
@@ -305,8 +317,11 @@ class QWenModelImplBase : public torch::nn::Module {
     }
     auto cancated_h = torch::cat(hs, 0);
     return norm_(cancated_h, 0);
+#elif defined(USE_ILU)
+    return torch::Tensor();
+#endif
   }
-
+#if defined(USE_NPU)
   // load the weight from the checkpoint
   virtual void load_state_dict(const StateDict& state_dict) {
     for (auto i = 0; i < FLAGS_default_micro_batch_num; i++) {
@@ -352,7 +367,7 @@ class QWenModelImplBase : public torch::nn::Module {
       embed_tokens_[i] = word_embedding[i];
     }
   }
-
+#endif
  protected:
   torch::Tensor cos_pos_;
   torch::Tensor sin_pos_;
@@ -383,7 +398,18 @@ class QWenForCausalLMImplBase : public torch::nn::Module {
     tie_word_embeddings = context.get_model_args().tie_word_embeddings();
     // register submodules
     model_ = register_module("model", QWenModelType(context));
+#if defined(USE_NPU)
     lm_head_ = register_module("lm_head", layer::LmHead(context));
+#elif defined(USE_ILU)
+    lm_head_ =
+        register_module("lm_head",
+                        layer::LmHead(context.get_model_args().hidden_size(),
+                                      context.get_model_args().vocab_size(),
+                                      /*bias=*/false,
+                                      /*gather_output=*/true,
+                                      context.get_parallel_args(),
+                                      context.get_tensor_options()));
+#endif
   }
 
   torch::Tensor get_input_embeddings(torch::Tensor input_ids) {

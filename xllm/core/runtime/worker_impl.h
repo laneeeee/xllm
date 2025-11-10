@@ -28,6 +28,8 @@ limitations under the License.
 #include "framework/kv_cache/hccl_kv_cache_transfer.h"
 #include "framework/kv_cache/kv_cache_store.h"
 #include "framework/kv_cache/llm_data_dist_transfer.h"
+#elif defined(USE_ILU)
+#include "framework/kv_cache/kv_cache_store.h"
 #endif
 #include "framework/eplb/eplb_executor.h"
 #include "framework/model/causal_lm.h"

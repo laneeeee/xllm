@@ -297,8 +297,9 @@ void SpeculativeWorkerImpl::prepare_prefill_inputs(
     auto& input_params = prefill_input.input_params;
 
     torch::Tensor token_ids = safe_to(input.token_ids, torch::kCPU);
-    Slice<int32_t> tokens_ids_slice = {token_ids.data_ptr<int32_t>(),
-                                       input.token_ids.numel()};
+    Slice<int32_t> tokens_ids_slice = {
+        token_ids.data_ptr<int32_t>(),
+        static_cast<size_t>(input.token_ids.numel())};
 
     int32_t start_idx = 0;
     std::vector<int32_t> new_token_ids;
@@ -451,7 +452,7 @@ void SpeculativeWorkerImpl::prepare_draft_inputs(
     const int32_t num_sequences = input_params.num_sequences;
     torch::Tensor positions = safe_to(input.positions, torch::kCPU);
     Slice<int32_t> positions_slice = {positions.data_ptr<int32_t>(),
-                                      positions.numel()};
+                                      static_cast<size_t>(positions.numel())};
     std::vector<int32_t> new_positions;
     new_positions.reserve(num_sequences);
     for (int32_t i = 0; i < num_sequences; ++i) {
@@ -466,19 +467,22 @@ void SpeculativeWorkerImpl::prepare_draft_inputs(
 
     int32_t block_size = options_.block_size();
     torch::Tensor kv_seq_lens = safe_to(input_params.kv_seq_lens, torch::kCPU);
-    Slice<int32_t> kv_seq_lens_slice = {kv_seq_lens.data_ptr<int32_t>(),
-                                        kv_seq_lens.numel()};
+    Slice<int32_t> kv_seq_lens_slice = {
+        kv_seq_lens.data_ptr<int32_t>(),
+        static_cast<size_t>(kv_seq_lens.numel())};
     torch::Tensor block_tables =
         safe_to(input_params.block_tables, torch::kCPU);
     torch::Tensor new_cache_slots =
         safe_to(input_params.new_cache_slots, torch::kCPU);
-    Slice<int32_t> new_cache_slots_slice = {new_cache_slots.data_ptr<int32_t>(),
-                                            new_cache_slots.numel()};
+    Slice<int32_t> new_cache_slots_slice = {
+        new_cache_slots.data_ptr<int32_t>(),
+        static_cast<size_t>(new_cache_slots.numel())};
     for (int32_t seq_id = 0; seq_id < num_sequences; ++seq_id) {
       kv_seq_lens_vec.emplace_back(kv_seq_lens_slice[seq_id] + offset);
       torch::Tensor block_table = block_tables[seq_id];
-      Slice<int32_t> block_table_slice = {block_table.data_ptr<int32_t>(),
-                                          block_table.numel()};
+      Slice<int32_t> block_table_slice = {
+          block_table.data_ptr<int32_t>(),
+          static_cast<size_t>(block_table.numel())};
       int32_t new_token_slot_id = get_new_token_slot_id(
           new_cache_slots_slice[seq_id], block_size, offset, block_table_slice);
       new_token_slot_ids.emplace_back(new_token_slot_id);
@@ -518,10 +522,10 @@ void SpeculativeWorkerImpl::prepare_validate_inputs(
 
     torch::Tensor token_ids = safe_to(input.token_ids, torch::kCPU);
     Slice<int32_t> tokens_ids_slice = {token_ids.data_ptr<int32_t>(),
-                                       token_ids.numel()};
+                                       static_cast<size_t>(token_ids.numel())};
     torch::Tensor positions = safe_to(input.positions, torch::kCPU);
     Slice<int32_t> positions_slice = {positions.data_ptr<int32_t>(),
-                                      positions.numel()};
+                                      static_cast<size_t>(positions.numel())};
 
     std::vector<int32_t> new_token_ids;
     std::vector<int32_t> new_positions;
@@ -556,19 +560,22 @@ void SpeculativeWorkerImpl::prepare_validate_inputs(
 
     int32_t block_size = options_.block_size();
     torch::Tensor kv_seq_lens = safe_to(input_params.kv_seq_lens, torch::kCPU);
-    Slice<int32_t> kv_seq_lens_slice = {kv_seq_lens.data_ptr<int32_t>(),
-                                        kv_seq_lens.numel()};
+    Slice<int32_t> kv_seq_lens_slice = {
+        kv_seq_lens.data_ptr<int32_t>(),
+        static_cast<size_t>(kv_seq_lens.numel())};
     torch::Tensor block_tables =
         safe_to(input_params.block_tables, torch::kCPU);
     torch::Tensor new_cache_slots =
         safe_to(input_params.new_cache_slots, torch::kCPU);
-    Slice<int32_t> new_cache_slots_slice = {new_cache_slots.data_ptr<int32_t>(),
-                                            new_cache_slots.numel()};
+    Slice<int32_t> new_cache_slots_slice = {
+        new_cache_slots.data_ptr<int32_t>(),
+        static_cast<size_t>(new_cache_slots.numel())};
     for (int32_t seq_id = 0; seq_id < num_sequences; ++seq_id) {
       int32_t cur_token_slot_id = new_cache_slots_slice[seq_id];
       torch::Tensor block_table = block_tables[seq_id];
-      Slice<int32_t> block_table_slice = {block_table.data_ptr<int32_t>(),
-                                          block_table.numel()};
+      Slice<int32_t> block_table_slice = {
+          block_table.data_ptr<int32_t>(),
+          static_cast<size_t>(block_table.numel())};
 
       // process kv length and q length
       if (FLAGS_enable_atb_spec_kernel) {
@@ -699,14 +706,15 @@ ForwardInput SpeculativeWorkerImpl::update_input_by_last_step_output(
 
   torch::Tensor token_ids = safe_to(inputs.token_ids, torch::kCPU);
   Slice<int32_t> tokens_ids_slice = {token_ids.data_ptr<int32_t>(),
-                                     token_ids.numel()};
+                                     static_cast<size_t>(token_ids.numel())};
   torch::Tensor positions = safe_to(inputs.positions, torch::kCPU);
   Slice<int32_t> positions_slice = {positions.data_ptr<int32_t>(),
-                                    positions.numel()};
+                                    static_cast<size_t>(positions.numel())};
   torch::Tensor last_token_ids = safe_to(
       last_step_output_.sample_output.next_tokens.flatten(), torch::kCPU);
-  Slice<int64_t> last_tokens_ids_slice = {last_token_ids.data_ptr<int64_t>(),
-                                          last_token_ids.numel()};
+  Slice<int64_t> last_tokens_ids_slice = {
+      last_token_ids.data_ptr<int64_t>(),
+      static_cast<size_t>(last_token_ids.numel())};
 
   int32_t last_step_decode_num = 1;
   if (last_step_output_.sample_output.next_tokens.dim() == 2) {
@@ -715,12 +723,13 @@ ForwardInput SpeculativeWorkerImpl::update_input_by_last_step_output(
   int32_t block_size = options_.block_size();
   torch::Tensor kv_seq_lens = safe_to(input_params.kv_seq_lens, torch::kCPU);
   Slice<int32_t> kv_seq_lens_slice = {kv_seq_lens.data_ptr<int32_t>(),
-                                      kv_seq_lens.numel()};
+                                      static_cast<size_t>(kv_seq_lens.numel())};
   torch::Tensor block_tables = safe_to(input_params.block_tables, torch::kCPU);
   torch::Tensor new_cache_slots =
       safe_to(input_params.new_cache_slots, torch::kCPU);
-  Slice<int32_t> new_cache_slots_slice = {new_cache_slots.data_ptr<int32_t>(),
-                                          new_cache_slots.numel()};
+  Slice<int32_t> new_cache_slots_slice = {
+      new_cache_slots.data_ptr<int32_t>(),
+      static_cast<size_t>(new_cache_slots.numel())};
 
   const int32_t num_sequences = inputs.input_params.num_sequences;
   std::vector<int32_t> new_token_ids;
@@ -766,8 +775,9 @@ ForwardInput SpeculativeWorkerImpl::update_input_by_last_step_output(
     kv_seq_lens_vec.emplace_back(kv_seq_lens_slice[seq_id] + postion_offset);
 
     torch::Tensor block_table = block_tables[seq_id];
-    Slice<int32_t> block_table_slice = {block_table.data_ptr<int32_t>(),
-                                        block_table.numel()};
+    Slice<int32_t> block_table_slice = {
+        block_table.data_ptr<int32_t>(),
+        static_cast<size_t>(block_table.numel())};
     int32_t new_token_slot_id =
         get_new_token_slot_id(new_cache_slots_slice[seq_id],
                               block_size,

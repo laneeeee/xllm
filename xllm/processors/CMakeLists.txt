@@ -1,6 +1,11 @@
 include(cc_library)
 include(cc_test)
-
+if(USE_ILU)
+set(CMAKE_BUILD_TYPE "Release" 
+      CACHE STRING "ILU use Release Mode to avoid link bug when Choose Debug mode" 
+      FORCE
+  )
+endif()
 # Define the base dependencies
 set(BASE_DEPS
   :common

@@ -29,6 +29,8 @@ limitations under the License.
 
 #include "kernels/npu/xllm_ops/replace_token.h"
 #include "pytorch/adapter/utils/utils.h"
+#elif defined(USE_ILU)
+#include <c10/cuda/CUDAFunctions.h>
 #endif
 
 #include <memory>
@@ -84,6 +86,17 @@ WorkerImpl::WorkerImpl(const ParallelArgs& parallel_args,
 
 #elif defined(USE_MLU)
   // TODO(mlu): implement mlu init context
+#elif defined(USE_ILU)
+  // int currentDevId = device.index();
+  // int ret = c10::cuda::SetDevice(currentDevId);
+  // if (ret != 0) {
+  //   LOG(ERROR) << "set device id:" << currentDevId
+  //              << " failed, ret:" << ret;
+  // }
+  // std::string device_name = "cuda:" + std::to_string(currentDevId);
+  // torch::init(device_name);
+  general_threadpool_.schedule(
+      [this]() mutable { c10::cuda::SetDevice(device_.index()); });
 #endif
   stream_helper_ = std::make_unique<StreamHelper>();
   extra_stream_helper_ = std::make_unique<StreamHelper>();
@@ -370,7 +383,7 @@ void WorkerImpl::update_last_step_output(
 
 ForwardInput WorkerImpl::update_input_by_last_step_output(
     ForwardInput& inputs) {
-#if defined(USE_A3) || defined(USE_MLU)
+#if defined(USE_A3) || defined(USE_MLU) || defined(USE_ILU)
   auto& flatten_tokens = inputs.token_ids;
   auto neg_mask = (flatten_tokens < 0);
   auto clamped_neg_indices = torch::clamp(-flatten_tokens, 0);

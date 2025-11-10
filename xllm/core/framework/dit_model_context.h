@@ -51,9 +51,9 @@ class DiTModelContext {
   }
 
   const std::string& model_type() const { return model_type_; }
-
+#if defined(USE_NPU)
   const atb::Context* get_atb_context() const { return context_; }
-
+#endif
  private:
   std::unordered_map<std::string, ModelArgs> model_args_;
   std::unordered_map<std::string, QuantArgs> quant_args_;
@@ -64,6 +64,8 @@ class DiTModelContext {
 #if defined(USE_NPU)
   // used for npu atb
   atb::Context* context_;
+#elif defined(USE_NPU)
+  void* context_;
 #endif
 };
 

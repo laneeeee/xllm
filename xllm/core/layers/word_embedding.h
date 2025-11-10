@@ -30,6 +30,8 @@ class WordEmbedding : public torch::nn::ModuleHolder<NpuWordEmbeddingImpl> {
   WordEmbedding(const ModelContext& context)
       : ModuleHolder(std::make_shared<NpuWordEmbeddingImpl>(context)) {}
 };
+#elif defined(USE_ILU)
+class WordEmbedding : public torch::nn::Module {};
 #endif
 
 }  // namespace layer

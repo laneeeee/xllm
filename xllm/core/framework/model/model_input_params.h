@@ -171,6 +171,19 @@ struct ModelInputParams {
   torch::Tensor cum_sum;
 
   std::shared_ptr<NPULayerSynchronizerImpl> layer_synchronizer = nullptr;
+#elif defined(USE_ILU)
+  // copy in / copy out
+  std::vector<CacheBlockInfo> async_copy_out_blocks;
+  std::vector<CacheBlockInfo> copy_out_blocks;
+  std::vector<CacheBlockInfo> copy_in_blocks;
+  std::vector<CacheBlockInfo> swap_blocks;
+
+  // block copy kernel
+  torch::Tensor src_block_indices;
+  torch::Tensor dst_block_indices;
+  torch::Tensor cum_sum;
+
+  // std::shared_ptr<NPULayerSynchronizerImpl> layer_synchronizer = nullptr;
 #endif
 
   DpEpPaddingData dp_ep_padding_data;

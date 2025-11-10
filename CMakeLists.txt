@@ -3,6 +3,20 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 option(USE_NPU "Enable NPU support" OFF)
 option(USE_MLU "Enable MLU support" OFF)
+option(USE_ILU "Enable ILU support" OFF)
+
+if(USE_ILU)
+    set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/Modules;${CMAKE_MODULE_PATH}")
+    set(CMAKE_EXPORT_COMPILE_COMMANDS   ON)
+    set(CMAKE_CUDA_ARCHITECTURES "ivcore11")
+    set(WARNINGS_AS_ERRORS OFF)
+    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+      add_definitions(
+        -Wno-c++11-narrowing
+        -Wno-thread-safety-analysis
+      )
+  endif()
+endif()
 
 if(DEVICE_ARCH STREQUAL "ARM")
     set(CMAKE_SYSTEM_PROCESSOR aarch64)
@@ -107,6 +121,9 @@ if(USE_NPU)
 elseif(USE_MLU)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=1")
   add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
+elseif(USE_ILU)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
+  add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
 endif()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -332,9 +349,47 @@ endif()
 
 if(USE_MLU)
   add_definitions(-DUSE_MLU)
-# TODO(mlu): set mlu environment variables
+  set(CMAKE_VERBOSE_MAKEFILE ON)
+  include_directories(
+      $ENV{PYTHON_INCLUDE_PATH}
+      $ENV{PYTORCH_INSTALL_PATH}/include
+      $ENV{PYTORCH_INSTALL_PATH}/include/torch/csrc/api/include
+      $ENV{PYTORCH_MLU_INSTALL_PATH}
+      $ENV{PYTORCH_MLU_INSTALL_PATH}/../
+      $ENV{PYTORCH_MLU_INSTALL_PATH}/csrc
+      $ENV{NEUWARE_HOME}/include
+  )
+
+  link_directories(
+    $ENV{PYTHON_LIB_PATH}
+    $ENV{PYTORCH_INSTALL_PATH}/lib
+    $ENV{PYTORCH_MLU_INSTALL_PATH}/csrc/lib
+    $ENV{PYTORCH_MLU_INSTALL_PATH}
+    $ENV{NEUWARE_HOME}/lib64
+  )
 endif()
 
+if(USE_ILU)
+  add_definitions(-DUSE_ILU)
+  set(CMAKE_VERBOSE_MAKEFILE ON)
+  include_directories(
+      $ENV{PYTHON_INCLUDE_PATH}
+      $ENV{PYTORCH_INSTALL_PATH}/include
+      $ENV{PYTORCH_INSTALL_PATH}/include/torch/csrc/api/include
+      # $ENV{PYTORCH_MLU_INSTALL_PATH}
+      # $ENV{PYTORCH_MLU_INSTALL_PATH}/../
+      # $ENV{PYTORCH_MLU_INSTALL_PATH}/csrc
+      # $ENV{NEUWARE_HOME}/include
+  )
+
+  link_directories(
+    $ENV{PYTHON_LIB_PATH}
+    $ENV{PYTORCH_INSTALL_PATH}/lib
+    # $ENV{PYTORCH_MLU_INSTALL_PATH}/csrc/lib
+    # $ENV{PYTORCH_MLU_INSTALL_PATH}
+    $ENV{NEUWARE_HOME}/lib64
+  )
+endif()
 # check if USE_CXX11_ABI is set correctly
 # if (DEFINED USE_CXX11_ABI)
 #   parse_make_options(${TORCH_CXX_FLAGS} "TORCH_CXX_FLAGS")

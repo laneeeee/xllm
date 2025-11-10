@@ -31,6 +31,8 @@ class PosEmbedding : public torch::nn::ModuleHolder<NpuRotaryEmbeddingImpl> {
   PosEmbedding(const ModelContext& context)
       : ModuleHolder(std::make_shared<NpuRotaryEmbeddingImpl>(context)) {}
 };
+#elif defined(USE_ILU)
+class PosEmbedding : public torch::nn::Module {};
 #endif
 
 }  // namespace layer

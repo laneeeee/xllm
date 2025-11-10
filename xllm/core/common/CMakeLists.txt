@@ -1,6 +1,23 @@
 include(cc_library)
 include(cc_test)
 
+if(TARGET cpprest)
+    # 方法A: 设置 C++ 标准为 20
+    set_target_properties(cpprest PROPERTIES
+        CXX_STANDARD 20
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS OFF
+    )
+    
+    # 方法B: 或者直接添加编译选项
+    target_compile_options(cpprest PRIVATE 
+        -std=c++20
+        -Wno-c++20-extensions
+    )
+    
+    message(STATUS "Modified cpprest target to use C++20")
+endif()
+
 cc_library(
   NAME 
     common

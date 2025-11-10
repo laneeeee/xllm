@@ -35,7 +35,7 @@ cc_library(
     absl::time
     absl::synchronization
 )
-
+if(USE_NPU)
 cc_test(
   NAME
     chunked_prefill_scheduler_test
@@ -57,4 +57,5 @@ target_link_libraries(chunked_prefill_scheduler_test
                       $<$<BOOL:${USE_NPU}>:hccl>
                       $<$<BOOL:${USE_NPU}>:c_sec>
                       $<$<BOOL:${USE_NPU}>:nnopbase>)
+endif()
 

@@ -6,6 +6,8 @@ namespace xllm {
 StreamHelper::StreamHelper() : stream_(c10_npu::getNPUStreamFromPool()) {}
 #elif defined(USE_MLU)
 // TODO(mlu): implement mlu create stream
+#elif defined(USE_ILU)
+StreamHelper::StreamHelper() : stream_(c10::cuda::getStreamFromPool()) {}
 #endif
 
 int StreamHelper::synchronize_stream() {
