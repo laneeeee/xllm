@@ -48,7 +48,11 @@ void load_sharded_weight(const StateDict& state_dict,
   if (tensor.defined()) {
     CHECK_EQ(weight.sizes(), tensor.sizes())
         << "weight size mismatch for " << state_dict.prefix() << name;
+#if defined(USE_ILU)
+    weight.copy_(tensor.clone());
+#else
     weight.copy_(tensor);
+#endif
     weight_is_loaded = true;
   }
 }

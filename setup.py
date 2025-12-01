@@ -226,7 +226,12 @@ def set_cuda_envs():
     os.environ["CUDA_TOOLKIT_ROOT_DIR"] = "/usr/local/cuda"
     os.environ["NCCL_ROOT"] = get_nccl_root_path()
     os.environ["NCCL_VERSION"] = "2"
-    
+def set_ilu_envs():
+    os.environ["PYTHON_INCLUDE_PATH"] = get_python_include_path()
+    os.environ["PYTHON_LIB_PATH"] =  get_torch_root_path()
+    os.environ["LIBTORCH_ROOT"] = get_torch_root_path()
+    os.environ["PYTORCH_INSTALL_PATH"] = get_torch_root_path()
+    os.environ["CUDA_TOOLKIT_ROOT_DIR"] = "/usr/local/corex"
 class CMakeExtension(Extension):
     def __init__(self, name: str, path: str, sourcedir: str = "") -> None:
         super().__init__(name, sources=[])
@@ -308,7 +313,7 @@ class ExtBuild(build_ext):
             f"-DDEVICE_ARCH={self.arch.upper()}",
             f"-DINSTALL_XLLM_KERNELS={'ON' if self.install_xllm_kernels else 'OFF'}",
         ]
-        
+
         if self.device == "a2" or self.device == "a3":
             cmake_args += ["-DUSE_NPU=ON"]
             # set npu environment variables
@@ -323,6 +328,9 @@ class ExtBuild(build_ext):
                            f"-DCMAKE_CUDA_ARCHITECTURES={cuda_architectures}"]
             # set cuda environment variables
             set_cuda_envs()
+        elif self.device == "ilu":
+            cmake_args += ["-DUSE_ILU=ON"]
+            set_ilu_envs()
         else:
             raise ValueError("Please set --device to a2 or a3 or mlu or cuda.")
 
@@ -340,6 +348,7 @@ class ExtBuild(build_ext):
         
         build_args = ["--config", build_type]
         max_jobs = os.getenv("MAX_JOBS", str(os.cpu_count()))
+        # max_jobs="2"
         build_args += ["-j" + max_jobs]
 
         env = os.environ.copy()
@@ -553,7 +562,7 @@ def pre_build():
             exit(0)
 
 if __name__ == "__main__":
-    device = 'a2'  # default
+    device = 'ilu'  # default
     arch = get_cpu_arch()
     install_kernels = True
     if '--device' in sys.argv:

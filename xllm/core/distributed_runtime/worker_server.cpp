@@ -104,7 +104,7 @@ void WorkerServer::create_server(
 
   CollectiveCommunicator comm(worker_global_rank, world_size, dp_size, ep_size);
   const ParallelArgs* parallel_args = comm.parallel_args();
-#if defined(USE_MLU) || defined(USE_CUDA)
+#if defined(USE_MLU) || defined(USE_CUDA) || defined(USE_ILU)
   comm.create_process_groups(master_node_addr, device);
 #endif
 

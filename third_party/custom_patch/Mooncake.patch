@@ -1,8 +1,18 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 047ae3e..b4ae201 100644
+index 047ae3e..634b1bf 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -16,7 +16,7 @@ option(WITH_STORE "build mooncake store library and sample code" ON)
+@@ -1,6 +1,8 @@
+ cmake_minimum_required(VERSION 3.16)
+ project(mooncake CXX C)
+-
++set(CMAKE_CXX_STANDARD 20)
++set(CMAKE_CXX_STANDARD_REQUIRED ON)
++set(CMAKE_CXX_EXTENSIONS OFF)
+ # indicates cmake is invoked from top-level dir
+ set(GLOBAL_CONFIG "true")
+ 
+@@ -16,7 +18,7 @@ option(WITH_STORE "build mooncake store library and sample code" ON)
  option(WITH_P2P_STORE "build p2p store library and sample code" OFF)
  option(WITH_RUST_EXAMPLE "build the Rust interface and sample code for the transfer engine" OFF)
  
