@@ -106,11 +106,11 @@ def get_torch_root_path():
     except ImportError:
         return None
 
-def get_torch_mlu_root_path():
+def get_ixformer_root_path():
     try:
-        import torch_mlu
+        import ixformer
         import os
-        return os.path.dirname(os.path.abspath(torch_mlu.__file__))
+        return os.path.dirname(os.path.abspath(ixformer.__file__))
     except ImportError:
         return None
 
@@ -226,12 +226,15 @@ def set_cuda_envs():
     os.environ["CUDA_TOOLKIT_ROOT_DIR"] = "/usr/local/cuda"
     os.environ["NCCL_ROOT"] = get_nccl_root_path()
     os.environ["NCCL_VERSION"] = "2"
+
 def set_ilu_envs():
     os.environ["PYTHON_INCLUDE_PATH"] = get_python_include_path()
     os.environ["PYTHON_LIB_PATH"] =  get_torch_root_path()
     os.environ["LIBTORCH_ROOT"] = get_torch_root_path()
     os.environ["PYTORCH_INSTALL_PATH"] = get_torch_root_path()
     os.environ["CUDA_TOOLKIT_ROOT_DIR"] = "/usr/local/corex"
+    os.environ["IXFORMER_INSTALL_PATH"] = get_ixformer_root_path()
+
 class CMakeExtension(Extension):
     def __init__(self, name: str, path: str, sourcedir: str = "") -> None:
         super().__init__(name, sources=[])
@@ -280,8 +283,7 @@ class ExtBuild(build_ext):
             for ext in self.extensions:
                 self.build_extension(ext)
         except Exception as e:
-            print("ERROR: Build failed.")
-            print(f"Details: {e}")
+            print("Build failed.")
             exit(1)
 
     def build_extension(self, ext: CMakeExtension):

@@ -445,12 +445,13 @@ if(USE_ILU)
       $ENV{PYTHON_INCLUDE_PATH}
       $ENV{PYTORCH_INSTALL_PATH}/include
       $ENV{PYTORCH_INSTALL_PATH}/include/torch/csrc/api/include
+      $ENV{IXFORMER_INSTALL_PATH}/csrc/include/ixformer
   )
 
   link_directories(
     $ENV{PYTHON_LIB_PATH}
     $ENV{PYTORCH_INSTALL_PATH}/lib
-    $ENV{NEUWARE_HOME}/lib64
+    $ENV{IXFORMER_INSTALL_PATH}
   )
 endif()
 

@@ -17,16 +17,14 @@ limitations under the License.
 
 #include <ATen/DynamicLibrary.h>
 #include <ATen/core/dispatch/Dispatcher.h>
+#include <cuda_runtime.h>
 #include <glog/logging.h>
+#include <torch/all.h>
 
 #include <optional>
 
-#include <torch/all.h>
 #include "ATen/Tensor.h"
 #include "ATen/cuda/CUDAEvent.h"
-#include "c10/cuda/CUDAGuard.h"
-#include "c10/cuda/CUDAStream.h"
-#include "c10/cuda/CUDAFunctions.h"
 #include "c10/core/Device.h"
 #include "c10/core/DeviceGuard.h"
 #include "c10/core/GradMode.h"
@@ -34,8 +32,9 @@ limitations under the License.
 #include "c10/core/MemoryFormat.h"
 #include "c10/core/ScalarType.h"
 #include "c10/core/TensorOptions.h"
-
-#include <cuda_runtime.h>
+#include "c10/cuda/CUDAFunctions.h"
+#include "c10/cuda/CUDAGuard.h"
+#include "c10/cuda/CUDAStream.h"
 #include "kernels/kernels.h"
 
 // #include "utils.h"
@@ -43,11 +42,11 @@ using namespace ixformer;
 
 namespace xllm::kernel::ilu {
 
-void apply_rope_pos_ids_cos_sin_cache(at::Tensor &query, 
-                                        at::Tensor &key,
-                                        at::Tensor &cos_sin_cache,
-                                        at::Tensor &positions, 
-                                        bool interleave);
+void apply_rope_pos_ids_cos_sin_cache(at::Tensor& query,
+                                      at::Tensor& key,
+                                      at::Tensor& cos_sin_cache,
+                                      at::Tensor& positions,
+                                      bool interleave);
 
 // act_mode only support silu, gelu, gelu_tanh
 void act_and_mul(torch::Tensor out,
@@ -55,19 +54,19 @@ void act_and_mul(torch::Tensor out,
                  const std::string& act_mode);
 
 void reshape_paged_cache(
-    const at::Tensor &key,   //  (num_tokens, num_heads, head_size) 
-    const at::Tensor &value,       // (num_tokens, num_heads, head_size)
-    at::Tensor &key_cache,   // (num_blocks, num_heads, block_size, head_size)
-    at::Tensor &value_cache,  // (num_blocks, num_heads, block_size, head_size)
-    at::Tensor &slot_mapping); //(num_tokens)   
-    
-void batch_prefill( torch::Tensor& query,
-                    torch::Tensor& key,
+    const at::Tensor& key,    //  (num_tokens, num_heads, head_size)
+    const at::Tensor& value,  // (num_tokens, num_heads, head_size)
+    at::Tensor& key_cache,    // (num_blocks, num_heads, block_size, head_size)
+    at::Tensor& value_cache,  // (num_blocks, num_heads, block_size, head_size)
+    at::Tensor& slot_mapping);  //(num_tokens)
+
+void batch_prefill(torch::Tensor& query,
+                   torch::Tensor& key,
                    torch::Tensor& value,
                    torch::Tensor& output,
-                    std::optional<torch::Tensor>& output_lse,
-                   const std::optional<torch::Tensor>& query_start_loc,
-                   const std::optional<torch::Tensor>& kv_start_loc,
+                   std::optional<torch::Tensor>& output_lse,
+                   const std::optional<torch::Tensor>& q_cu_seq_lens,
+                   const std::optional<torch::Tensor>& kv_cu_seq_lens,
                    const std::optional<torch::Tensor>& alibi_slope,
                    const std::optional<torch::Tensor>& attn_bias,
                    const std::optional<torch::Tensor>& q_quant_scale,
@@ -82,11 +81,11 @@ void batch_prefill( torch::Tensor& query,
                    const std::string& compute_dtype,
                    bool return_lse);
 
-void batch_decode( torch::Tensor& query,
-                   torch::Tensor& k_cache,
+void batch_decode(torch::Tensor& query,
+                  torch::Tensor& k_cache,
                   torch::Tensor& output,
-                   torch::Tensor& block_table,
-                   torch::Tensor& seq_lens,
+                  torch::Tensor& block_table,
+                  torch::Tensor& seq_lens,
                   const std::optional<torch::Tensor>& v_cache,
                   std::optional<torch::Tensor>& output_lse,
                   const std::optional<torch::Tensor>& q_quant_scale,
@@ -104,11 +103,11 @@ void batch_decode( torch::Tensor& query,
                   bool is_causal,
                   int64_t kv_cache_quant_bit_size);
 
-void layer_norm(at::Tensor &input,
-                at::Tensor &weight,
-                c10::optional<at::Tensor> &bias_tensor,
-                const c10::optional<at::Tensor> &fused_bias,
-                at::Tensor &output,
+void layer_norm(at::Tensor& input,
+                at::Tensor& weight,
+                c10::optional<at::Tensor>& bias_tensor,
+                const c10::optional<at::Tensor>& fused_bias,
+                at::Tensor& output,
                 double eps);
 
 torch::Tensor matmul(torch::Tensor a,
