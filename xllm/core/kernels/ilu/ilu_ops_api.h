@@ -35,6 +35,7 @@ limitations under the License.
 #include "c10/cuda/CUDAFunctions.h"
 #include "c10/cuda/CUDAGuard.h"
 #include "c10/cuda/CUDAStream.h"
+#include "ixformer.h"
 #include "kernels/kernels.h"
 
 // #include "utils.h"
@@ -54,10 +55,11 @@ void act_and_mul(torch::Tensor out,
                  const std::string& act_mode);
 
 void reshape_paged_cache(
-    const at::Tensor& key,    //  (num_tokens, num_heads, head_size)
-    const at::Tensor& value,  // (num_tokens, num_heads, head_size)
-    at::Tensor& key_cache,    // (num_blocks, num_heads, block_size, head_size)
-    at::Tensor& value_cache,  // (num_blocks, num_heads, block_size, head_size)
+    at::Tensor& key,                   //  (num_tokens, num_heads, head_size)
+    std::optional<at::Tensor>& value,  // (num_tokens, num_heads, head_size)
+    at::Tensor& key_cache,  // (num_blocks, num_heads, block_size, head_size)
+    std::optional<at::Tensor>&
+        value_cache,  // (num_blocks, num_heads, block_size, head_size)
     at::Tensor& slot_mapping);  //(num_tokens)
 
 void batch_prefill(torch::Tensor& query,
@@ -106,7 +108,6 @@ void batch_decode(torch::Tensor& query,
 void layer_norm(at::Tensor& input,
                 at::Tensor& weight,
                 c10::optional<at::Tensor>& bias_tensor,
-                const c10::optional<at::Tensor>& fused_bias,
                 at::Tensor& output,
                 double eps);
 

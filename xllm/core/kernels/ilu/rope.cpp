@@ -18,16 +18,25 @@ limitations under the License.
 
 namespace xllm::kernel::ilu {
 
-
-void apply_rope_pos_ids_cos_sin_cache(at::Tensor &query, 
+void apply_rope_pos_ids_cos_sin_cache(at::Tensor& query,
+                                      at::Tensor& key,
+                                      at::Tensor& cos_sin_cache,
+                                      at::Tensor& positions,
+                                      bool interleave) {
+  const int64_t head_size = cos_sin_cache.size(-1) / 2;
+  infer::vllm_rotary_embedding(
+      positions, query, key, head_size, cos_sin_cache, !interleave);
+}
+/*
+void apply_rope_pos_ids_cos_sin_cache(at::Tensor &query,
                                         at::Tensor &key,
                                         at::Tensor &cos_sin_cache,
-                                        at::Tensor &positions, 
+                                        at::Tensor &positions,
                                         bool interleave) {
     check_tensor_half_bf_float(query);
     check_tensor_half_bf_float(key);
     check_tensor_half_bf_float(cos_sin_cache);
-    
+
     positions = positions.to(at::kLong);
     TORCH_CHECK(positions.scalar_type() == at::ScalarType::Long);
     TORCH_CHECK(positions.is_cuda());
@@ -37,7 +46,7 @@ void apply_rope_pos_ids_cos_sin_cache(at::Tensor &query,
     TORCH_CHECK(query.dim() == 3 || query.dim() == 2);
     TORCH_CHECK(key.dim() == 3 || key.dim() == 2);
     TORCH_CHECK(cos_sin_cache.dim() == 2);
-    
+
     const int64_t head_size = cos_sin_cache.size(-1) / 2;
     query = query.view({query.size(0), -1, head_size});
     key = key.view({key.size(0), -1, head_size});
@@ -110,5 +119,5 @@ void apply_rope_pos_ids_cos_sin_cache(at::Tensor &query,
 #undef CHECK_CACHE_AND_CALL
 #undef CALL_VLLM_ROTARY_EMBEDDING
 }
-
-}  // namespace xllm::kernel::cuda
+*/
+}  // namespace xllm::kernel::ilu

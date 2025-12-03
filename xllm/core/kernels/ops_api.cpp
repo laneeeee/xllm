@@ -31,7 +31,7 @@ limitations under the License.
 namespace xllm::kernel {
 
 // void pause_for_debug() {
-//   std::cout << "🔍 Debug breakpoint hit: " << "break 1" 
+//   std::cout << "🔍 Debug breakpoint hit: " << "break 1"
 //               << " | Thread ID: " << std::this_thread::get_id()
 //               << " | Process PID: " << getpid() << std::endl;
 //     raise(SIGSTOP); // 暂停进程，等待外部attach
@@ -56,12 +56,12 @@ void apply_rotary(RotaryParams& params) {
                                          params.position_ids.value(),
                                          params.interleaved);
 #elif defined(USE_ILU)
-at::Tensor long_position_ids = params.position_ids.value().to(at::kLong);
+  at::Tensor long_position_ids = params.position_ids.value().to(at::kLong);
   ilu::apply_rope_pos_ids_cos_sin_cache(params.q,
-                                         params.k,
-                                         params.cos_sin,
-                                         long_position_ids,
-                                         params.interleaved);
+                                        params.k,
+                                        params.cos_sin,
+                                        long_position_ids,
+                                        params.interleaved);
 #else
   LOG(FATAL) << "apply_rotary not implemented";
 #endif
@@ -101,11 +101,11 @@ void reshape_paged_cache(ReshapePagedCacheParams& params) {
                             params.k_cache,
                             params.v_cache.value_or(torch::Tensor()));
 #elif defined(USE_ILU)
-  auto v_cache = params.v_cache.value_or(torch::Tensor());
+  // auto v_cache = params.v_cache.value_or(torch::Tensor());
   ilu::reshape_paged_cache(params.key,
-                           params.value.value_or(torch::Tensor()), 
+                           params.value,
                            params.k_cache,
-                           v_cache,
+                           params.v_cache,
                            params.slot_mapping);
 #else
   LOG(FATAL) << "reshape_paged_cache not implemented";
@@ -262,7 +262,8 @@ void fused_layernorm(FusedLayerNormParams& params) {
 #elif defined(USE_CUDA)
   cuda::rmsnorm(params.output, params.input, params.weight, params.eps);
 #elif defined(USE_ILU)
-  ilu::layer_norm(params.input, params.weight, params.bias, std::nullopt, params.output, params.eps);
+  ilu::layer_norm(
+      params.input, params.weight, params.bias, params.output, params.eps);
 #else
   LOG(FATAL) << "fused_layernorm not implemented";
 #endif
