@@ -18,11 +18,12 @@ limitations under the License.
 #include "utils.h"
 
 namespace ixformer::infer {
-at::Tensor ixinfer_flash_attn_unpad(
+at::Tensor ixinfer_flash_attn_unpad_with_block_tables(
     at::Tensor& query,
-    at::Tensor& key,
-    at::Tensor& value,
+    at::Tensor& key_cache,
+    at::Tensor& value_cache,
     at::Tensor& out,
+    at::Tensor& block_tables,
     at::Tensor& cu_seq_q,
     at::Tensor& cu_seq_k,
     int64_t max_seq_q,
@@ -73,14 +74,20 @@ void vllm_rotary_embedding(at::Tensor& positions,
                            at::Tensor& cos_sin_cache,
                            bool is_neox);
 
-void residual_layer_norm(at::Tensor& input,
-                         at::Tensor& residual,
-                         at::Tensor& weight,
-                         at::Tensor& bias,
-                         c10::optional<at::Tensor>& fused_bias,
-                         c10::optional<at::Tensor>& output,
-                         c10::optional<at::Tensor>& residual_output,
-                         double alpha,
-                         double eps,
-                         bool is_post);
+void residual_rms_norm(at::Tensor& input,
+                       at::Tensor& residual,
+                       at::Tensor& weight,
+                       c10::optional<at::Tensor>& output,
+                       c10::optional<at::Tensor>& residual_output,
+                       c10::optional<at::Tensor>& fused_bias,
+                       double alpha,
+                       double eps,
+                       bool is_post);
+
+void rms_norm(at::Tensor& input,
+              at::Tensor& weight,
+              at::Tensor& output,
+              c10::optional<at::Tensor>& fused_bias,
+              double eps);
+
 }  // namespace ixformer::infer

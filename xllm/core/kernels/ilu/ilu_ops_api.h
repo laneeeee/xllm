@@ -74,6 +74,7 @@ void batch_prefill(torch::Tensor& query,
                    const std::optional<torch::Tensor>& q_quant_scale,
                    const std::optional<torch::Tensor>& k_quant_scale,
                    const std::optional<torch::Tensor>& v_quant_scale,
+                   const std::optional<torch::Tensor>& block_tables,
                    int64_t max_query_len,
                    int64_t max_seq_len,
                    float scale,
@@ -113,6 +114,16 @@ void residual_layer_norm(torch::Tensor& input,
                          std::optional<torch::Tensor>& bias,
                          std::optional<torch::Tensor>& residual_out,
                          double eps);
+
+void rms_norm(at::Tensor& output,
+              at::Tensor& input,
+              at::Tensor& weight,
+              double eps);
+
+// void fused_add_rms_norm(at::Tensor& output,
+//                 at::Tensor& input,
+//                 at::Tensor& weight,
+//                 double eps);
 
 torch::Tensor matmul(torch::Tensor a,
                      torch::Tensor b,
