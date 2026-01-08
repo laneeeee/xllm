@@ -116,12 +116,18 @@ void batch_decode(torch::Tensor& query,
                   bool is_causal,
                   int64_t kv_cache_quant_bit_size) {
   if (query.dim() == 4) {
-    query = query.view(
-        {query.size(0) * query.size(1), query.size(2), query.size(3)});
+    query =
+        query
+            .view({query.size(0) * query.size(1), query.size(2), query.size(3)})
+            .contiguous();
   }
   if (output.dim() == 4) {
-    output = output.view(
-        {output.size(0) * output.size(1), output.size(2), output.size(3)});
+    output = output
+                 .view({output.size(0) * output.size(1),
+                        output.size(2),
+                        output.size(3)})
+                 .contiguous();
+    ;
   }
   auto v_cache_ = v_cache.value_or(torch::Tensor());
   int64_t num_kv_heads = k_cache.size(1);
